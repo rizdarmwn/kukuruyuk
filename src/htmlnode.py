@@ -7,7 +7,7 @@ class HTMLNode:
         tag: Optional[str] = None,
         value: Optional[str] = None,
         children: Optional[list[Self]] = None,
-        props: Optional[dict[str, str]] = None,
+        props: Optional[dict[str, str | None]] = None,
     ):
         self.tag = tag
         self.value = value
@@ -15,7 +15,7 @@ class HTMLNode:
         self.props = props
 
     def to_html(self):
-        raise NotImplementedError
+        raise NotImplementedError("to html is not implemented")
 
     def props_to_html(self):
         str_builder = [""]
@@ -39,13 +39,32 @@ class HTMLNode:
 
 class LeafNode(HTMLNode):
     def __init__(
-        self, tag: str | None, value: str, props: dict[str, str] | None = None
+        self, tag: str | None, value: str, props: dict[str, str | None] | None = None
     ):
         super().__init__(tag, value, None, props)
 
     def to_html(self):
         if self.value == "":
-            raise ValueError
+            raise ValueError("value is missing")
         if self.tag is None or self.tag == "":
             return self.value
         return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
+
+
+class ParentNode(HTMLNode):
+    def __init__(self, tag: str, children, props=None):
+        super().__init__(tag, None, children, props)
+
+    def to_html(self):
+        if self.tag is None or self.tag == "":
+            raise ValueError("tag is missing")
+
+        if self.children is None or len(self.children) == 0:
+            raise ValueError("children is missing")
+
+        str_builder = []
+        for c in self.children:
+            str_builder.append(c.to_html())
+        joined = "".join(str_builder)
+
+        return f"<{self.tag}>{joined}</{self.tag}>"
