@@ -1,11 +1,12 @@
 import os
 import shutil
+import sys
 
 from node_util import markdown_to_html_node
 from util import extract_title
 
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, base_path):
     print(f"Generating path from {from_path} to {dest_path} using {template_path}")
     with open(from_path, "r") as f:
         md = f.read()
@@ -16,6 +17,8 @@ def generate_page(from_path, template_path, dest_path):
         tmpl = t.read()
         tmpl = tmpl.replace("{{ Title }}", title)
         tmpl = tmpl.replace("{{ Content }}", html)
+        tmpl = tmpl.replace('href="/', f'href="{base_path}')
+        tmpl = tmpl.replace('src="/', f'src="{base_path}')
 
     with open(dest_path, "w") as w:
         w.write(tmpl)
@@ -24,7 +27,7 @@ def generate_page(from_path, template_path, dest_path):
     w.close()
 
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, base_path):
     dirs = os.listdir(dir_path_content)
     for dir in dirs:
         new_src = os.path.join(dir_path_content, dir)
@@ -33,9 +36,9 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
             os.mkdir(dest_dir_path)
         if os.path.isfile(new_src):
             file_dst = new_dst.replace(".md", ".html")
-            generate_page(new_src, template_path, file_dst)
+            generate_page(new_src, template_path, file_dst, base_path)
         else:
-            generate_pages_recursive(new_src, template_path, new_dst)
+            generate_pages_recursive(new_src, template_path, new_dst, base_path)
 
 
 def copy_contents(src, dst):
@@ -56,8 +59,9 @@ def copy_contents(src, dst):
 
 
 def main():
-    copy_contents("static/", "public/")
-    generate_pages_recursive("content/", "template.html", "public/")
+    basepath = sys.argv[1] if sys.argv[1] != "" else "/"
+    copy_contents("static/", "docs/")
+    generate_pages_recursive(f"content/", f"template.html", f"docs/", basepath)
 
 
 if __name__ == "__main__":
