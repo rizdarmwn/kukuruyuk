@@ -54,8 +54,7 @@ class TestLeafNode(unittest.TestCase):
 
     def test_leaf_to_html_with_no_value(self):
         node = LeafNode("h1", "")
-        with self.assertRaises(ValueError):
-            node.to_html()
+        self.assertEqual(node.to_html(), "<h1></h1>")
 
     def test_leaf_to_html_with_no_tag(self):
         node = LeafNode(tag=None, value="No Tag")
@@ -79,13 +78,11 @@ class TestParentNode(unittest.TestCase):
 
     def test_to_html_with_no_children(self):
         parent_node = ParentNode("div", [])
-        with self.assertRaises(ValueError):
-            parent_node.to_html()
+        self.assertEqual(parent_node.to_html(), "<div></div>")
 
     def test_to_html_with_no_tag(self):
         parent_node = ParentNode("", [])
-        with self.assertRaises(ValueError):
-            parent_node.to_html()
+        self.assertEqual(parent_node.to_html(), "<></>")
 
     def test_to_html_with_multiple_children(self):
         child_node1 = LeafNode("h1", "child1")
